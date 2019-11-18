@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-gl/gl/all-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 )
 
 // Direction represents the direction in which strings should be rendered.
@@ -74,7 +74,7 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 }
 
 //Printf draws a string to the screen, takes a list of arguments like printf
-func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{}) error {
+func (f *Font) Printf(x, y float32, scale float32, align int32, blend bool, fs string, argv ...interface{}) error {
 
 	indices := []rune(fmt.Sprintf(fs, argv...))
 
@@ -86,7 +86,9 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 
 	//setup blending mode
 	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	if blend {
+		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	}
 
 	// Activate corresponding render state
 	gl.UseProgram(f.program)
@@ -98,6 +100,13 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindVertexArray(f.vao)
+
+	//calculate alignment position
+	if align == 0 {
+		x -= f.Width(scale, fs) * 0.5
+	} else if align < 0 {
+		x -= f.Width(scale, fs)
+	}
 
 	// Iterate through all characters in string
 	for i := range indices {
@@ -145,7 +154,7 @@ func (f *Font) Printf(x, y float32, scale float32, fs string, argv ...interface{
 		//BufferSubData(target Enum, offset int, data []byte)
 		gl.BufferSubData(gl.ARRAY_BUFFER, 0, len(vertices)*4, gl.Ptr(vertices)) // Be sure to use glBufferSubData and not glBufferData
 		// Render quad
-		gl.DrawArrays(gl.TRIANGLES, 0, 16)
+		gl.DrawArrays(gl.TRIANGLES, 0, 24)
 
 		gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
