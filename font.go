@@ -74,7 +74,7 @@ func (f *Font) UpdateResolution(windowWidth int, windowHeight int) {
 }
 
 //Printf draws a string to the screen, takes a list of arguments like printf
-func (f *Font) Printf(x, y float32, scale float32, align int32, blend bool, fs string, argv ...interface{}) error {
+func (f *Font) Printf(x, y float32, scale float32, align int32, blend bool, window [4]int32, fs string, argv ...interface{}) error {
 
 	indices := []rune(fmt.Sprintf(fs, argv...))
 
@@ -89,6 +89,10 @@ func (f *Font) Printf(x, y float32, scale float32, align int32, blend bool, fs s
 	if blend {
 		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	}
+
+	//restrict drawing to a certain part of the window	
+	gl.Enable(gl.SCISSOR_TEST)
+	gl.Scissor(window[0], window[1], window[2], window[3])
 
 	// Activate corresponding render state
 	gl.UseProgram(f.program)
@@ -167,6 +171,7 @@ func (f *Font) Printf(x, y float32, scale float32, align int32, blend bool, fs s
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.UseProgram(0)
 	gl.Disable(gl.BLEND)
+	gl.Disable(gl.SCISSOR_TEST)
 
 	return nil
 }
