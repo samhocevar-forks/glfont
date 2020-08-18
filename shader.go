@@ -67,7 +67,7 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 	return shader, nil
 }
 
-var fragmentFontShader = `#version 150 core
+var fragmentFontShader = `
 in vec2 fragTexCoord;
 out vec4 outputColor;
 
@@ -80,7 +80,7 @@ void main()
     outputColor = textColor * sampled;
 }` + "\x00"
 
-var vertexFontShader = `#version 150 core
+var vertexFontShader = `
 
 //vertex position
 in vec2 vert;
