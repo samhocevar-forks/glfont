@@ -43,7 +43,7 @@ func LoadFont(file string, scale int32, windowWidth int, windowHeight int) (*Fon
 	defer fd.Close()
 
 	// Configure the default font vertex and fragment shaders
-	program, err := newProgram(vertexFontShader, fragmentFontShader)
+	program, err := newProgram(FontShaderVer + vertexFontShader, FontShaderVer + fragmentFontShader)
 	if err != nil {
 		panic(err)
 	}
