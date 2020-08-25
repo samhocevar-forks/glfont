@@ -67,7 +67,7 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 	return shader, nil
 }
 
-var fontShaderVer = "#version 150 core"
+var FontShaderVer = "#version 150 core"
 
 var fragmentFontShader = `
 in vec2 fragTexCoord;
