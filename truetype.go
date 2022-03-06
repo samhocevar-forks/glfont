@@ -23,7 +23,7 @@ type character struct {
 }
 
 //LoadTrueTypeFont builds a set of textures based on a ttf files gylphs
-func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, dir Direction) (*Font, error) {
+func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, ranges []rune, dir Direction) (*Font, error) {
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -37,12 +37,12 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 
 	//make Font stuct type
 	f := new(Font)
-	f.fontChar = make([]*character, 0, high-low+1)
+	f.fontChar = make(map[rune]*character)
 	f.program = program            //set shader program
 	f.SetColor(1.0, 1.0, 1.0, 1.0) //set default white
 
-	//make each gylph
-	for ch := low; ch <= high; ch++ {
+	for r := 0; r + 1 < len(ranges); r += 2 {
+	for ch := ranges[r]; ch < ranges[r + 1]; ch++ {
 
 		char := new(character)
 
@@ -125,9 +125,9 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, low, high rune, 
 
 		char.textureID = texture
 
-		//add char to fontChar list
-		f.fontChar = append(f.fontChar, char)
-
+		//add char to fontChar map
+		f.fontChar[ch] = char
+	}
 	}
 
 	gl.BindTexture(gl.TEXTURE_2D, 0)
