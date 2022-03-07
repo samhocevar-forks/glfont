@@ -109,6 +109,14 @@ func (f *Font) Printf(x, y float32, scale float32, align int32, blend bool, wind
 		//find rune in fontChar list
 		ch, ok := f.fontChar[runeIndex]
 
+		//render missing runes
+		if !ok {
+			low := runeIndex - (runeIndex % 32)
+fmt.Fprintf(os.Stderr, "missing! %c %d -- generating %d %d\n", runeIndex, runeIndex, low, low + 31)
+			f.GenerateGlyphs(low, low + 31)
+			ch, ok = f.fontChar[runeIndex]
+		}
+
 		//skip runes that are not in font chacter range
 		if !ok {
 			//fmt.Printf("%c %d\n", runeIndex, runeIndex)
@@ -175,6 +183,14 @@ func (f *Font) Width(scale float32, fs string, argv ...interface{}) float32 {
 
 		//find rune in fontChar list
 		ch, ok := f.fontChar[runeIndex]
+
+		//render missing runes
+		if !ok {
+fmt.Printf("%c %d\n", runeIndex, runeIndex)
+			low := runeIndex & rune(32 - 1)
+			f.GenerateGlyphs(low, low + 31)
+			ch, ok = f.fontChar[runeIndex]
+		}
 
 		//skip runes that are not in font chacter range
 		if !ok {
