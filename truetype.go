@@ -24,6 +24,8 @@ type character struct {
 
 func GenerateGlyphs(f *Font, ttf *truetype.Font, low, high rune) error {
 
+	scale := 14
+
 		//create a freetype context for drawing
 		c := freetype.NewContext()
 		c.SetDPI(72)
@@ -31,7 +33,6 @@ func GenerateGlyphs(f *Font, ttf *truetype.Font, low, high rune) error {
 		c.SetFontSize(float64(scale))
 		c.SetHinting(font.HintingFull)
 
-	scale := 24
 	for ch := low; ch <= high; ch++ {
 		char := new(character)
 
