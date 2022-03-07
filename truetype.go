@@ -24,6 +24,13 @@ type character struct {
 
 func GenerateGlyphs(f *Font, ttf *truetype.Font, low, high rune) error {
 
+		//create a freetype context for drawing
+		c := freetype.NewContext()
+		c.SetDPI(72)
+		c.SetFont(ttf)
+		c.SetFontSize(float64(scale))
+		c.SetHinting(font.HintingFull)
+
 	scale := 24
 	for ch := low; ch <= high; ch++ {
 		char := new(character)
@@ -73,22 +80,15 @@ func GenerateGlyphs(f *Font, ttf *truetype.Font, low, high rune) error {
 		rgba := image.NewRGBA(rect)
 		draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
 
-		//create a freetype context for drawing
-		c := freetype.NewContext()
-		c.SetDPI(72)
-		c.SetFont(ttf)
-		c.SetFontSize(float64(scale))
-		c.SetClip(rgba.Bounds())
-		c.SetDst(rgba)
-		c.SetSrc(fg)
-		c.SetHinting(font.HintingFull)
-
 		//set the glyph dot
 		px := 0 - (int(gBnd.Min.X) >> 6)
 		py := (gAscent)
 		pt := freetype.Pt(px, py)
 
 		// Draw the text from mask to image
+		c.SetClip(rgba.Bounds())
+		c.SetDst(rgba)
+		c.SetSrc(fg)
 		_, err := c.DrawString(string(ch), pt)
 		if err != nil {
 			return err
