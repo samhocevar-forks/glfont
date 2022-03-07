@@ -22,28 +22,10 @@ type character struct {
 	bearingV  int    //glyph bearing vertical
 }
 
-//LoadTrueTypeFont builds a set of textures based on a ttf files gylphs
-func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, ranges []rune, dir Direction) (*Font, error) {
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
+func GenerateGlyphs(f *Font, ttf *truetype.Font, low, high rune) error {
 
-	// Read the truetype font.
-	ttf, err := truetype.Parse(data)
-	if err != nil {
-		return nil, err
-	}
-
-	//make Font stuct type
-	f := new(Font)
-	f.fontChar = make(map[rune]*character)
-	f.program = program            //set shader program
-	f.SetColor(1.0, 1.0, 1.0, 1.0) //set default white
-
-	for r := 0; r + 1 < len(ranges); r += 2 {
-	for ch := ranges[r]; ch < ranges[r + 1]; ch++ {
-
+	scale := 24
+	for ch := low; ch <= high; ch++ {
 		char := new(character)
 
 		//create new face to measure glyph diamensions
@@ -55,7 +37,7 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, ranges []rune, d
 
 		gBnd, gAdv, ok := ttfFace.GlyphBounds(ch)
 		if ok != true {
-			return nil, fmt.Errorf("ttf face glyphBounds error")
+			return fmt.Errorf("ttf face glyphBounds error")
 		}
 
 		gh := int32((gBnd.Max.Y - gBnd.Min.Y) >> 6)
@@ -107,9 +89,9 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, ranges []rune, d
 		pt := freetype.Pt(px, py)
 
 		// Draw the text from mask to image
-		_, err = c.DrawString(string(ch), pt)
+		_, err := c.DrawString(string(ch), pt)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// Generate texture
@@ -128,6 +110,30 @@ func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, ranges []rune, d
 		//add char to fontChar map
 		f.fontChar[ch] = char
 	}
+	return nil
+}
+
+//LoadTrueTypeFont builds a set of textures based on a ttf files gylphs
+func LoadTrueTypeFont(program uint32, r io.Reader, scale int32, ranges []rune, dir Direction) (*Font, error) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Read the truetype font.
+	ttf, err := truetype.Parse(data)
+	if err != nil {
+		return nil, err
+	}
+
+	//make Font stuct type
+	f := new(Font)
+	f.fontChar = make(map[rune]*character)
+	f.program = program            //set shader program
+	f.SetColor(1.0, 1.0, 1.0, 1.0) //set default white
+
+	for r := 0; r + 1 < len(ranges); r += 2 {
+		GenerateGlyphs(f, ttf, ranges[r], ranges[r + 1])
 	}
 
 	gl.BindTexture(gl.TEXTURE_2D, 0)
